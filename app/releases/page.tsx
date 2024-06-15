@@ -1,15 +1,18 @@
-'use client'
+"use client";
 
-import React, { CSSProperties, useEffect, useState } from 'react';
-import BounceLoader from 'react-spinners/BounceLoader';
-import { getReleaseDetails, getReleases, getTrackId } from '@/hooks/getDataBeatport';
-import { Release, ReleaseDetail, Track } from '@/types/types';
-import AudioPlayerComponent from '@/components/AudioPlayerComponent/AudioPlayerComponent';
+import {
+  getReleaseDetails,
+  getReleases,
+  getTrackId,
+} from "@/hooks/getDataBeatport";
+import { Release } from "@/types/types";
+import { CSSProperties, useEffect, useState } from "react";
+import BounceLoader from "react-spinners/BounceLoader";
 
 const override: CSSProperties = {
-  display: 'block',
-  margin: '0 auto',
-  borderColor: 'red',
+  display: "block",
+  margin: "0 auto",
+  borderColor: "red",
 };
 
 type Props = {};
@@ -18,7 +21,6 @@ function ReleasesPage({}: Props) {
   const [releases, setReleases] = useState<Release[]>([]);
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  const [tracks, setTracks] = useState<{ [key: number]: Track }>({});
 
   const labelId = 33556;
 
@@ -55,27 +57,35 @@ function ReleasesPage({}: Props) {
         const releasesWithDetails = await Promise.all(
           releasesData.map(async (release) => {
             const detail = await getReleaseDetails(release.id);
-            return { ...release, price: detail.price };
+            const track = await getTrackId(detail.tracks[0]);
+            return {
+              ...release,
+              price: detail.price,
+              tracks: detail.tracks,
+              sample_url: track.sample_url,
+            };
           })
         );
         setReleases(releasesWithDetails);
 
-        const tracksData = await Promise.all(
-          releasesWithDetails.map(async (release) => {
-            if (release.track_count > 0) {
-              const trackId = release.url.split('/').pop();
-              const track = await getTrackId(parseInt(trackId!));
-              return { releaseId: release.id, track };
-            }
-          }).filter(Boolean)
-        );
-        const trackMap = tracksData.reduce((acc, curr) => {
-          acc[curr!.releaseId] = curr!.track;
-          return acc;
-        }, {} as { [key: number]: Track });
-        setTracks(trackMap);
+        // const tracksData = await Promise.all(
+        //   releasesWithDetails
+        //     .map(async (release) => {
+        //       if (release.track_count > 0) {
+        //         const trackId = release.url.split("/").pop();
+        //         const track = await getTrackId(parseInt(trackId!));
+        //         return { releaseId: release.id, track };
+        //       }
+        //     })
+        //     .filter(Boolean)
+        // );
+        // const trackMap = tracksData.reduce((acc, curr) => {
+        //   acc[curr!.releaseId] = curr!.track;
+        //   return acc;
+        // }, {} as { [key: number]: Track });
+        // setTracks(trackMap);
       } catch (error) {
-        console.error('Error fetching releases:', error);
+        console.error("Error fetching releases:", error);
       }
     }
 
@@ -103,25 +113,27 @@ function ReleasesPage({}: Props) {
             // const release = releaseOrDetail as Release;
             // const detail = releaseOrDetail as ReleaseDetail;
             return (
-              <div key={release.id} className="bg-gray-800 rounded-lg shadow-md overflow-hidden relative 
+              <div
+                key={release.id}
+                className="bg-gray-800 rounded-lg shadow-md overflow-hidden relative 
               hover:scale-105 transition-all ease-in-out duration-500 border border-black/50 
-              h-[750px]">
+              h-[750px]"
+              >
                 {release.image && (
-                  <img src={release.image.uri} alt={release.name} className="w-full h-auto object-cover 
-                  rounded-t-lg" />
+                  <img
+                    src={release.image.uri}
+                    alt={release.name}
+                    className="w-full h-auto object-cover 
+                  rounded-t-lg"
+                  />
                 )}
                 <div className="p-4">
                   <h2 className="text-red-500 text-2xl mb-2">{release.name}</h2>
                 </div>
-                <div className='text-white'>
+                <div className="text-white">
                   {release.price.display}
-                  {/* <AudioPlayerComponent /> */}
-                  {tracks[release.id] && (
-            <audio controls>
-              <source src={tracks[release.id].sample_url} type="audio/mpeg" />
-              Your browser does not support the audio element.
-            </audio>
-          )}
+                  <audio src={release.sample_url} controls></audio>
+                  {/* <AudioPlayerComponent source={release.sample_url} /> */}
                 </div>
               </div>
             );
@@ -129,10 +141,17 @@ function ReleasesPage({}: Props) {
         </div>
       )}
       <div className="flex justify-between pt-4">
-        <button onClick={() => setPage((prev) => Math.max(prev - 1, 1))} disabled={page === 1} className="px-4 py-2 bg-gray-300 rounded">
+        <button
+          onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+          disabled={page === 1}
+          className="px-4 py-2 bg-gray-300 rounded"
+        >
           Previous
         </button>
-        <button onClick={() => setPage((prev) => prev + 1)} className="px-4 py-2 bg-gray-300 rounded">
+        <button
+          onClick={() => setPage((prev) => prev + 1)}
+          className="px-4 py-2 bg-gray-300 rounded"
+        >
           Next
         </button>
       </div>

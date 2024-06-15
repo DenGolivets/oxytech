@@ -7,6 +7,7 @@ export type Release = {
   track_count: number;
   price: Price;
   url: string;
+  sample_url: string;
 };
 
 export interface Price {
@@ -38,10 +39,11 @@ export interface ReleaseDetail {
   url: string;
   track_count: number;
   price: Price;
-  tracks: Track[];
+  tracks: string[];
   exclusive: boolean;
   desc: string;
   publish_date: string;
+  sample_url: string;
 }
 
 export interface Price {
@@ -57,5 +59,3 @@ export interface Track {
   sample_end_ms: number;
   publish_status: string;
 }
-
-
