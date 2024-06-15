@@ -2,10 +2,40 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+html, body, :root {
+  height: 100%;
+}
+/* * {
+  box-sizing: border-box;
+} */
+
+.nav-hover-p::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -4px; /* Регулируйте это значение в зависимости от ваших предпочтений */
+  width: 100%;
+  height: 2px;
+  background-color: transparent;
+  transition: background-color 0.3s ease;
+}
+
+.nav-hover-p:hover::after {
+  background-color: rgb(15, 15, 15);
+}
+
+.homepage {
+  background-image: url('/images/Bg2.jpg');
+  background-size: cover;
+  background-position: bottom;
+  position: relative;
+}
+
+@media (max-width: 768px) {
+  .homepage {
+    background-size: 190svh;
+    background-position: right;
+  }
 }
 
 @media (prefers-color-scheme: dark) {
