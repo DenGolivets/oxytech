@@ -1,10 +1,11 @@
-import React from 'react'
-import AudioPlayer from '../ReleasesPage/AudioPlayer'
+import AudioPlayer from "../ReleasesPage/AudioPlayer";
 
-const AudioPlayerComponent = () => {
-  return (
-    <AudioPlayer src='' />
-  )
+interface IAudioPlayerComponent {
+  source: string;
 }
 
-export default AudioPlayerComponent
+const AudioPlayerComponent = ({ source }: IAudioPlayerComponent) => {
+  return <AudioPlayer src={source} />;
+};
+
+export default AudioPlayerComponent;
