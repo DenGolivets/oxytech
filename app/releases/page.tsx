@@ -1,11 +1,13 @@
 "use client";
 
+import AudioPlayerTwo from "@/components/AudioPlayerComponent/AudioPlayerTwo";
 import {
   getReleaseDetails,
   getReleases,
   getTrackId,
 } from "@/hooks/getDataBeatport";
 import { Release } from "@/types/types";
+import Link from "next/link";
 import { CSSProperties, useEffect, useState } from "react";
 import BounceLoader from "react-spinners/BounceLoader";
 
@@ -24,30 +26,6 @@ function ReleasesPage({}: Props) {
 
   const labelId = 33556;
 
-  // useEffect(() => {
-  //   async function fetchReleases() {
-  //     setIsLoading(true);
-  //     try {
-  //       const releasesData: Release[] = await getReleases(labelId, page);
-  //       // setReleases(releasesData);
-  //       const detailedReleases : ReleaseDetail[] = await Promise.all(
-  //         releasesData.map(async (release) => {
-  //           const details = await getReleaseDetails(release.id);
-  //           return details;
-  //         })
-  //       );
-  //       const combinedReleases = [...releasesData,...detailedReleases ];
-  //       console.log(combinedReleases);
-  //       setReleases(combinedReleases);
-  //     } catch (error) {
-  //       console.error('Error fetching releases:', error);
-  //     }
-  //     setIsLoading(false);
-  //   }
-
-  //   fetchReleases();
-  // }, [page]);
-
   useEffect(() => {
     async function fetchReleases() {
       try {
@@ -63,31 +41,17 @@ function ReleasesPage({}: Props) {
               price: detail.price,
               tracks: detail.tracks,
               sample_url: track.sample_url,
+              name_track: track.name,
             };
           })
         );
         setReleases(releasesWithDetails);
-
-        // const tracksData = await Promise.all(
-        //   releasesWithDetails
-        //     .map(async (release) => {
-        //       if (release.track_count > 0) {
-        //         const trackId = release.url.split("/").pop();
-        //         const track = await getTrackId(parseInt(trackId!));
-        //         return { releaseId: release.id, track };
-        //       }
-        //     })
-        //     .filter(Boolean)
-        // );
-        // const trackMap = tracksData.reduce((acc, curr) => {
-        //   acc[curr!.releaseId] = curr!.track;
-        //   return acc;
-        // }, {} as { [key: number]: Track });
-        // setTracks(trackMap);
       } catch (error) {
         console.error("Error fetching releases:", error);
+      } finally {
+        setIsLoading(false);
       }
-    }
+    };
 
     fetchReleases();
   }, [labelId, page]);
@@ -108,32 +72,51 @@ function ReleasesPage({}: Props) {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {releases.map((release) => {
-            // if (!releaseOrDetail) return null;
-            // const release = releaseOrDetail as Release;
-            // const detail = releaseOrDetail as ReleaseDetail;
+          {releases.map((release, index) => {
+
+            function truncateText(text: string, maxLength: number) {
+              if (text.length <= maxLength) return text;
+              return `${text.slice(0, maxLength)}...`;
+
+            }
             return (
               <div
                 key={release.id}
-                className="bg-gray-800 rounded-lg shadow-md overflow-hidden relative 
-              hover:scale-105 transition-all ease-in-out duration-500 border border-black/50 
-              h-[750px]"
+                className="bg-gray-800 rounded-lg shadow-md overflow-hidden relative border border-black/50 
+                h-[750px]"
               >
                 {release.image && (
                   <img
                     src={release.image.uri}
                     alt={release.name}
-                    className="w-full h-auto object-cover 
-                  rounded-t-lg"
+                    className="w-full h-auto object-cover rounded-t-lg hover:scale-105 transition-all duration-500
+                    ease-in-out"
                   />
                 )}
-                <div className="p-4">
-                  <h2 className="text-red-500 text-2xl mb-2">{release.name}</h2>
+                <div className="flex items-center justify-between -mb-6">
+                  <div className="p-4 flex flex-col items-center pl-10 mt-2">
+                    <h1 className="text-2xl text-red-600 font-bold">{release.artists.map((artist) => (
+                      <div key={artist.id}>{artist.name}</div>
+                    ))}</h1>
+                    <h2 className="text-purple-600 text-xl mb-2 font-medium">
+                      {truncateText(release.name, 20)}
+                    </h2>
+                  </div>
+                  <div className="flex items-center pr-4">
+                    <Link href={`https://www.beatport.com/release/${release.slug}/${release.id}`} target="a_blank">
+                      <button className="flex flex-col items-center justify-center bg-[#6c6b6b]
+                      px-2 py-1 rounded-lg hover:scale-110 transition-all duration-300">
+                        <span className="text-[12px] text-orange-500 font-bold">Buy Now</span>
+                        <span className="text-[14px] text-white/60 font-medium">{release.price.display}</span>
+                      </button>
+                    </Link>
+                  </div>
                 </div>
                 <div className="text-white">
-                  {release.price.display}
-                  <audio src={release.sample_url} controls></audio>
-                  {/* <AudioPlayerComponent source={release.sample_url} /> */}
+                  <AudioPlayerTwo 
+                    src={release.sample_url} 
+                    name={release.name_track} 
+                  />
                 </div>
               </div>
             );
